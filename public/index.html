@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>
+    HMP control
+  </title>
+  </head>
+<body>
+  <h1>HMP control</h1>
+  <input type="checkbox" id="switchGen">
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> -->
+  <script src='/socket.io/socket.io.js'></script>
+  <script>
+    <!-- document.getElementById("switchGen").checked = 1; -->
+    var socket = io();
+    socket.emit('switchGen', 25)
+    window.addEventListener("load", function() {
+      var switchGen = document.getElementById("switchGen");
+      switchGen.addEventListener('change', function() {
+        socket.emit("switchGen", Number(this.checked))
+      })
+    })
+    socket.on('switchGen', function(data) {
+      document.getElementById("switchGen").checked = data;
+      socket.emit("switchGen", data)
+    })
+  </script>
+  </body>
+  </html>
