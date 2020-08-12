@@ -1,7 +1,7 @@
 const SerialPort = require('serialport')
 
-function HMP(serial) {
-  this._serial = serial
+exports.HMP = function (serial) {
+  this._serial = new SerialPort(serial, { baudRate: 57600 })
   this._busy = false
   this._queue = []
   var device = this
@@ -21,22 +21,22 @@ function HMP(serial) {
   })
 }
 
-HMP.prototype.send = function(data, ref) {
+exports.HMP.prototype.send = function(data, ref) {
   this._queue.push([data, ref])
   if (this._busy) return;
   this._busy = true
   this.processQueue()
 }
 
-HMP.prototype.cmd = function(data) {
+exports.HMP.prototype.cmd = function(data) {
   this.send(data)
 }
 
-HMP.prototype.ask = function(data, ref) {
+exports.HMP.prototype.ask = function(data, ref) {
   this.send(data, ref)
 }
 
-HMP.prototype.processQueue = function() {
+exports.HMP.prototype.processQueue = function() {
   console.log('%s', this)
   var next = this._queue.shift()
 
@@ -51,6 +51,3 @@ HMP.prototype.processQueue = function() {
   var device = this
   setTimeout(() => { device.processQueue() }, next[1] == null ? 10 : 500)
 }
-
-dev = new HMP(new SerialPort('/dev/ttyUSB0', { baudRate: 57600 }))
-setTimeout(function() { dev.send('*IDN?') }, 100)
