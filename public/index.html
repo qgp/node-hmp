@@ -13,16 +13,21 @@
   <script>
     var socket = io();
     window.addEventListener("load", function() {
-      var switchGen = document.getElementById("switchGen");
-      switchGen.addEventListener('change', function() {
-        socket.emit("switchGen", Number(this.checked))
-      })
+      document.getElementById("all_on").addEventListener('click', function() { socket.emit('all_on')})
+      document.getElementById("all_off").addEventListener('click', () => socket.emit('all_off'))
+      document.getElementById("en_1").addEventListener('change', function() { socket.emit('select', 1, Number(this.checked))})
+      document.getElementById("en_2").addEventListener('change', function() { socket.emit('select', 2, Number(this.checked))})
+      document.getElementById("en_3").addEventListener('change', function() { socket.emit('select', 3, Number(this.checked))})
+      document.getElementById("en_4").addEventListener('change', function() { socket.emit('select', 4, Number(this.checked))})
     })
     socket.on('switchGen', function(data) {
       document.getElementById("switchGen").checked = data;
     })
-    socket.on('updateVset', function(ch, data) {
-      document.getElementById("vset_" + ch).innerHTML = data;
+    socket.on('update', function(qty, ch, data) {
+      if (qty == 'en')
+        document.getElementById(qty + "_" + ch).checked = data;
+      else
+        document.getElementById(qty + "_" + ch).innerHTML = data;
       // $('#vset_2').innerHTML = data
     })
 	<!--  $('#messages').append($('<li>').text(msg)); -->
@@ -31,9 +36,12 @@
 <body>
   <h1>PSU control</h1>
   <input type="checkbox" id="switchGen">
+  <input type='button' id='all_on' value="ALL ON">
+  <input type='button' id='all_off' value="ALL OFF">
   <table>
     <tr>
       <th>Channel</th>
+      <th>Enable</th>
       <th>State</th>
       <th>Set voltage (V)</th>
       <th>Meas. voltage (V)</th>
@@ -42,6 +50,7 @@
     </tr>
     <tr>
       <td id="ch_1">1</td>
+      <td><input type="checkbox" id="en_1"></td>
       <td id="state_1">n/a</td>
       <td id="vset_1">n/a</td>
       <td id="vmeas_1">n/a</td>
@@ -50,6 +59,7 @@
     </tr>
     <tr>
       <td id="ch_2">2</td>
+      <td><input type="checkbox" id="en_2"></td>
       <td id="state_2">n/a</td>
       <td id="vset_2">n/a</td>
       <td id="vmeas_2">n/a</td>
@@ -58,6 +68,7 @@
     </tr>
     <tr>
       <td id="ch_3">3</td>
+      <td><input type="checkbox" id="en_3"></td>
       <td id="state_3">n/a</td>
       <td id="vset_3">n/a</td>
       <td id="vmeas_3">n/a</td>
@@ -66,6 +77,7 @@
     </tr>
     <tr>
       <td id="ch_4">4</td>
+      <td><input type="checkbox" id="en_4"></td>
       <td id="state_4">n/a</td>
       <td id="vset_4">n/a</td>
       <td id="vmeas_4">n/a</td>
