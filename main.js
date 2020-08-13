@@ -46,7 +46,7 @@ serialport.list().then(ports => {
       console.log(port.path + ' ' + port.vendorId + ' ' + port.productId);
       var dev = new hmp.HMP(port.path, io)
       devs.push(dev);
-      setInterval(() => { dev.update() }, 1000)
+      setInterval(() => { dev.update() }, 500)
     }
   });
 });

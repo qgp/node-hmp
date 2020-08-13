@@ -1,4 +1,5 @@
 const SerialPort = require('serialport')
+const createInterface = require('readline').createInterface
 
 exports.HMP = function (serial, io) {
   this._serial = new SerialPort(serial, { baudRate: 57600 })
@@ -12,6 +13,7 @@ exports.HMP = function (serial, io) {
   this._vmeas = []
   this._iset = []
   this._imeas = []
+  this._timeout = null
   var device = this
 
   this.ask('*IDN?', (arg) => { console.log('updating %s', arg); device._idn = arg })
@@ -19,18 +21,15 @@ exports.HMP = function (serial, io) {
   this.cmd('SYSTEM:BEEP')
   this.ask('*IDN?', this._idn)
 
-  this._serial.on('readable', function (data) {
+  this._serialLine = createInterface({ input : this._serial })
+
+  this._serialLine.on('line', function (data) {
+    if (device._timeout) clearTimeout(device._timeout)
+    device._timeout = null
     // console.log('%s -> %s (%s)', device._current[0], data, device._current[1])
-    var reply = device._serial.read()
-    if (device._current[1]) device._current[1](reply.toString().trim())
+    if (device._current[1]) device._current[1](data.toString().trim())
     device.processQueue()
   })
-
-  // this._serial.on('data', function (data) {
-  //   // console.log('%s -> %s (%s)', device._current[0], data, device._current[1])
-  //   if (device._current[1]) device._current[1](data.toString().trim())
-  //   device.processQueue()
-  // })
 
   this._serial.on('error', function(err) {
     console.log('Error: ', err.message)
@@ -65,7 +64,10 @@ exports.HMP.prototype.processQueue = function() {
   this._serial.write(next[0] + '\n')
   // console.log('Sent %s (%s)', next[0], next[1])
   var device = this
-  setTimeout(() => { device.processQueue() }, next[1] == null ? 10 : 500)
+  if (next[1] == null)
+    setImmediate(() => { device.processQueue() })
+  else
+    this._timeout = setTimeout(() => { console.log("*** TIMEOUT ***"); device.processQueue() }, 500)
 }
 
 exports.HMP.prototype.update = function() {
