@@ -5,7 +5,6 @@ const hostname = '*';
 const port_http = 3000;
 
 const server = http.createServer(handler);
-
 const io = require('socket.io')(server)
 const fs = require('fs')
 
@@ -27,7 +26,7 @@ function handler(req, res) {
 }
 
 io.on('connection', function(socket) {
-  console.log('io connection')
+  // console.log('io connection: %s', socket)
   var switchGen = 0;
   socket.on('switchGen', function(data) {
     switchGen = data;
@@ -35,5 +34,5 @@ io.on('connection', function(socket) {
   })
 })
 
-dev = new hmp.HMP('/dev/ttyUSB0')
-setTimeout(function() { dev.send('*IDN?') }, 100)
+dev = new hmp.HMP('/dev/ttyUSB0', io)
+setInterval(() => { dev.update() }, 1000)

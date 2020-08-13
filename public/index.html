@@ -9,16 +9,9 @@
     border: 1px solid black;
   }
   </style>
-</head>
-<body>
-  <h1>PSU control</h1>
-  <input type="checkbox" id="switchGen">
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> -->
   <script src='/socket.io/socket.io.js'></script>
   <script>
-    <!-- document.getElementById("switchGen").checked = 1; -->
     var socket = io();
-    socket.emit('switchGen', 25)
     window.addEventListener("load", function() {
       var switchGen = document.getElementById("switchGen");
       switchGen.addEventListener('change', function() {
@@ -27,18 +20,58 @@
     })
     socket.on('switchGen', function(data) {
       document.getElementById("switchGen").checked = data;
-      socket.emit("switchGen", data)
     })
+    socket.on('updateVset', function(ch, data) {
+      document.getElementById("vset_" + ch).innerHTML = data;
+      // $('#vset_2').innerHTML = data
+    })
+	<!--  $('#messages').append($('<li>').text(msg)); -->
   </script>
-
+</head>
+<body>
+  <h1>PSU control</h1>
+  <input type="checkbox" id="switchGen">
   <table>
-     <tr>
-       <th>Channel</th>
-       <th>Set voltage</th>
-       <th>Meas. voltage</th>
-       <th>Set current</th>
-       <th>Meas. current</th>
-     </tr>
+    <tr>
+      <th>Channel</th>
+      <th>State</th>
+      <th>Set voltage (V)</th>
+      <th>Meas. voltage (V)</th>
+      <th>Set current (A)</th>
+      <th>Meas. current (A)</th>
+    </tr>
+    <tr>
+      <td id="ch_1">1</td>
+      <td id="state_1">n/a</td>
+      <td id="vset_1">n/a</td>
+      <td id="vmeas_1">n/a</td>
+      <td id="iset_1">n/a</td>
+      <td id="imeas_1">n/a</td>
+    </tr>
+    <tr>
+      <td id="ch_2">2</td>
+      <td id="state_2">n/a</td>
+      <td id="vset_2">n/a</td>
+      <td id="vmeas_2">n/a</td>
+      <td id="iset_2">n/a</td>
+      <td id="imeas_2">n/a</td>
+    </tr>
+    <tr>
+      <td id="ch_3">3</td>
+      <td id="state_3">n/a</td>
+      <td id="vset_3">n/a</td>
+      <td id="vmeas_3">n/a</td>
+      <td id="iset_3">n/a</td>
+      <td id="imeas_3">n/a</td>
+    </tr>
+    <tr>
+      <td id="ch_4">4</td>
+      <td id="state_4">n/a</td>
+      <td id="vset_4">n/a</td>
+      <td id="vmeas_4">n/a</td>
+      <td id="iset_4">n/a</td>
+      <td id="imeas_4">n/a</td>
+    </tr>
   </table>
 </body>
 </html>

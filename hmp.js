@@ -1,9 +1,12 @@
 const SerialPort = require('serialport')
+// const myio = require('socket.io')
 
-exports.HMP = function (serial) {
+exports.HMP = function (serial, io) {
   this._serial = new SerialPort(serial, { baudRate: 57600 })
+  this._io = io
   this._busy = false
   this._queue = []
+  this._cnt = 0
   var device = this
 
   this.ask('*IDN?', (arg) => { console.log('updating %s', arg); device._idn = arg })
@@ -37,7 +40,7 @@ exports.HMP.prototype.ask = function(data, ref) {
 }
 
 exports.HMP.prototype.processQueue = function() {
-  console.log('%s', this)
+  // console.log('%s', this)
   var next = this._queue.shift()
 
   if (!next) {
@@ -50,4 +53,12 @@ exports.HMP.prototype.processQueue = function() {
   console.log('Sent %s (%s)', next[0], next[1])
   var device = this
   setTimeout(() => { device.processQueue() }, next[1] == null ? 10 : 500)
+}
+
+exports.HMP.prototype.update = function() {
+  this._io.emit('updateVset', 1, 1.5 + this._cnt)
+  this._io.emit('updateVset', 2, 2.5 + this._cnt)
+  this._io.emit('updateVset', 3, 3.5 + this._cnt)
+  this._io.emit('updateVset', 4, 4.5 + this._cnt)
+  this._cnt++
 }
