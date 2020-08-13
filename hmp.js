@@ -18,11 +18,18 @@ exports.HMP = function (serial, io) {
   this.cmd('SYSTEM:BEEP')
   this.ask('*IDN?', this._idn)
 
-  this._serial.on('data', function (data) {
+  this._serial.on('readable', function (data) {
     // console.log('%s -> %s (%s)', device._current[0], data, device._current[1])
-    if (device._current[1]) device._current[1](data.toString().trim())
+    var reply = device._serial.read()
+    if (device._current[1]) device._current[1](reply.toString().trim())
     device.processQueue()
   })
+
+  // this._serial.on('data', function (data) {
+  //   // console.log('%s -> %s (%s)', device._current[0], data, device._current[1])
+  //   if (device._current[1]) device._current[1](data.toString().trim())
+  //   device.processQueue()
+  // })
 
   this._serial.on('error', function(err) {
     console.log('Error: ', err.message)
@@ -76,4 +83,5 @@ exports.HMP.prototype.update = function() {
     this.ask('SOURCE:CURRENT:LEVEL:IMMEDIATE:AMPLITUDE?', val => this._iset[ch] = val)
     this._io.emit('update', 'iset', ch, this._iset[ch])
   })
+  this._io.emit('update', 'update', 'last', Date())
 }
