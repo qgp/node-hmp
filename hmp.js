@@ -1,9 +1,10 @@
 const SerialPort = require('serialport')
 const createInterface = require('readline').createInterface
 
-exports.HMP = function (serial, io) {
+exports.HMP = function (serial, io, db) {
   this._serial = new SerialPort(serial, { baudRate: 57600 })
   this._io = io
+  this._db = db
   this._busy = false
   this._queue = []
   this._channels = [ 1, 2, 3, 4 ]
@@ -90,4 +91,7 @@ exports.HMP.prototype.update = function() {
   this._io.emit('update', 'en', 'output', this._output == '0' ? 0 : 1)
   this._io.emit('update', 'sysinfo', 'global', this._idn)
   this._io.emit('update', 'update', 'last', Date())
+  console.log(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`)
+  if (this._vmeas[1])
+    this._db.run(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`)
 }

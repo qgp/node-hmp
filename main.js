@@ -1,6 +1,7 @@
 const http = require('http');
 const hmp = require('./hmp')
 const serialport = require('serialport')
+const sqlite3 = require('sqlite3')
 
 const hostname = '*';
 const port_http = 3000;
@@ -38,15 +39,19 @@ io.on('connection', function(socket) {
   socket.on('select', (ch, en) => { en_s = en == 0 ? "OFF" : "ON"; dev.cmd(`INST:NSELECT ${ch}`);dev.cmd(`OUTPUT:SELECT ${en_s}`) })
 })
 
-var devs = []
+let db = new sqlite3.Database('log.db')
+db.run('CREATE TABLE IF NOT EXISTS test(ts text, id text, value real);');
 
+var devs = []
 serialport.list().then(ports => {
   ports.forEach(function(port) {
     if (port.vendorId + port.productId == '0aad0117' || port.vendorId + port.productId == '0403ed72') {
       console.log(port.path + ' ' + port.vendorId + ' ' + port.productId);
-      var dev = new hmp.HMP(port.path, io)
+      var dev = new hmp.HMP(port.path, io, db)
       devs.push(dev);
-      setInterval(() => { dev.update() }, 500)
+      setInterval(() => { dev.update() }, 1000)
     }
   });
 });
+
+process.on('exit', () => { db.close()})
