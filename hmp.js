@@ -6,6 +6,7 @@ exports.HMP = function (serial, io) {
   this._busy = false
   this._queue = []
   this._channels = [ 1, 2, 3, 4 ]
+  this._output
   this._state = []
   this._vset = []
   this._vmeas = []
@@ -83,5 +84,8 @@ exports.HMP.prototype.update = function() {
     this.ask('SOURCE:CURRENT:LEVEL:IMMEDIATE:AMPLITUDE?', val => this._iset[ch] = val)
     this._io.emit('update', 'iset', ch, this._iset[ch])
   })
+  this.ask('OUTPUT:STATE?', val => this._output = val.trim())
+  this._io.emit('update', 'en', 'output', this._output == '0' ? 0 : 1)
+  this._io.emit('update', 'sysinfo', 'global', this._idn)
   this._io.emit('update', 'update', 'last', Date())
 }

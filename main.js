@@ -1,5 +1,6 @@
 const http = require('http');
 const hmp = require('./hmp')
+const serialport = require('serialport')
 
 const hostname = '*';
 const port_http = 3000;
@@ -28,16 +29,24 @@ function handler(req, res) {
 io.on('connection', function(socket) {
   // console.log('io connection: %s', socket)
   var switchGen = 0;
-  socket.on('all_on', () => { console.log("ALL ON"); dev.cmd("OUTPUT:GENERAL ON")})
-  socket.on('all_off', () => { console.log("ALL OFF"); dev.cmd("OUTPUT:GENERAL OFF")})
+  var dev = devs[0]
+  socket.on('output_on', () => { dev.cmd("OUTPUT:GENERAL ON")})
+  socket.on('output_off', () => { dev.cmd("OUTPUT:GENERAL OFF")})
   // socket.on('select', (ch, en) => { en_s = en == 0 ? "OFF" : "ON"; console.log("select %i %i %s", ch, en, en_s); cmd = `INST:NSELECT ${ch};:OUTPUT:SELECT ${en_s}`; console.log(cmd); dev.cmd(cmd) })
   // socket.on('select', (ch, en) => { en_s = en == 0 ? "OFF" : "ON"; dev.cmd(`INST:NSELECT ${ch};:OUTPUT:SELECT ${en_s}`) })
+  // TODO: fix race condition!
   socket.on('select', (ch, en) => { en_s = en == 0 ? "OFF" : "ON"; dev.cmd(`INST:NSELECT ${ch}`);dev.cmd(`OUTPUT:SELECT ${en_s}`) })
-  socket.on('switchGen', function(data) {
-    switchGen = data;
-    console.log(`switched to: ${switchGen}`)
-  })
 })
 
-dev = new hmp.HMP('/dev/ttyUSB0', io)
-setInterval(() => { dev.update() }, 1000)
+var devs = []
+
+serialport.list().then(ports => {
+  ports.forEach(function(port) {
+    if (port.vendorId + port.productId == '0aad0117' || port.vendorId + port.productId == '0403ed72') {
+      console.log(port.path + ' ' + port.vendorId + ' ' + port.productId);
+      var dev = new hmp.HMP(port.path, io)
+      devs.push(dev);
+      setInterval(() => { dev.update() }, 1000)
+    }
+  });
+});
