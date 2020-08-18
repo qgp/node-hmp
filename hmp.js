@@ -9,18 +9,19 @@ exports.HMP = function (serial, io, db) {
   this._queue = []
   this._channels = [ 1, 2, 3, 4 ]
   this._output
+  this._select = []
   this._state = []
   this._vset = []
   this._vmeas = []
   this._iset = []
   this._imeas = []
   this._timeout = null
+
   var device = this
 
-  this.ask('*IDN?', (arg) => { console.log('updating %s', arg); device._idn = arg })
+  this.ask('*IDN?', (arg) => { console.log('taking control of <%s>', arg); device._idn = arg })
   this.cmd('SYSTEM:REMOTE')
   this.cmd('SYSTEM:BEEP')
-  this.ask('*IDN?', this._idn)
 
   this._serialLine = createInterface({ input : this._serial })
 
@@ -74,9 +75,10 @@ exports.HMP.prototype.processQueue = function() {
 exports.HMP.prototype.update = function() {
   this._channels.forEach(ch => {
     this.cmd('INSTRUMENT:NSELECT ' + ch)
-    this.ask('OUTPut:SELECT?', val => this._state[ch] = val.trim())
-    this._io.emit('update', 'en', ch, this._state[ch] == '0' ? 0 : 1)
-    this._io.emit('update', 'state', ch, this._state[ch])
+    this.ask('OUTPut:SELECT?', val => this._select[ch] = val.trim())
+    this._io.emit('update', 'en', ch, this._select[ch] == '0' ? 0 : 1)
+    this.ask('OUTPut:STATE?', val => this._state[ch] = val.trim())
+    this._io.emit('update', 'state', ch, this._state[ch] == '1' ? "ON" : "OFF")
     this.ask('MEASURE:SCALAR:VOLTAGE:DC?', val => this._vmeas[ch] = val)
     this._io.emit('update', 'vmeas', ch, this._vmeas[ch])
     this.ask('SOURCE:VOLTAGE:LEVEL:IMMEDIATE:AMPLITUDE?', val => this._vset[ch] = val)
@@ -87,11 +89,11 @@ exports.HMP.prototype.update = function() {
     this.ask('SOURCE:CURRENT:LEVEL:IMMEDIATE:AMPLITUDE?', val => this._iset[ch] = val)
     this._io.emit('update', 'iset', ch, this._iset[ch])
   })
-  this.ask('OUTPUT:STATE?', val => this._output = val.trim())
+  this.ask('OUTPUT:GENERAL?', val => this._output = val.trim())
   this._io.emit('update', 'en', 'output', this._output == '0' ? 0 : 1)
   this._io.emit('update', 'sysinfo', 'global', this._idn)
-  this._io.emit('update', 'update', 'last', Date())
-  console.log(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`)
+  this._io.emit('update', 'update', 'last', new Date().toISOString())
+  // console.log(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`)
   if (this._vmeas[1])
-    this._db.run(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`)
+    this._db.run(`INSERT INTO test(ts, id, value) VALUES(datetime("now"), "${this._idn}", ${this._vmeas[1]})`, (err) => { if (err) console.log(err) })
 }

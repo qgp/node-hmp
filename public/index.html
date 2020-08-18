@@ -4,18 +4,23 @@
   <title>
     PSU control
   </title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-  body { background-color: #ddddff; }
-  table, th, td {
-    border: 1px solid black;
-  }
   </style>
   <script src='/socket.io/socket.io.js'></script>
   <script>
     var socket = io();
     window.addEventListener("load", function() {
       document.getElementById("output_on").addEventListener('click', function() { socket.emit('output_on')})
-      document.getElementById("output_off").addEventListener('click', () => socket.emit('output_off'))
+      // document.getElementById("output_off").addEventListener('click', () => socket.emit('output_off'))
+       document.getElementById("ctrl_vset_1").addEventListener('change', function() { if (confirm(`update vset_1: ${this.value}`)) socket.emit('vset', 1, this.value); this.value = ''})
+       document.getElementById("ctrl_vset_2").addEventListener('change', function() { if (confirm(`update vset_2: ${this.value}`)) socket.emit('vset', 2, this.value); this.value = ''})
+       document.getElementById("ctrl_vset_3").addEventListener('change', function() { if (confirm(`update vset_3: ${this.value}`)) socket.emit('vset', 3, this.value); this.value = ''})
+       document.getElementById("ctrl_vset_4").addEventListener('change', function() { if (confirm(`update vset_4: ${this.value}`)) socket.emit('vset', 4, this.value); this.value = ''})
+       document.getElementById("ctrl_iset_1").addEventListener('change', function() { if (confirm(`update iset_1: ${this.value}`)) socket.emit('iset', 1, this.value); this.value = ''})
+       document.getElementById("ctrl_iset_2").addEventListener('change', function() { if (confirm(`update iset_2: ${this.value}`)) socket.emit('iset', 2, this.value); this.value = ''})
+       document.getElementById("ctrl_iset_3").addEventListener('change', function() { if (confirm(`update iset_3: ${this.value}`)) socket.emit('iset', 3, this.value); this.value = ''})
+       document.getElementById("ctrl_iset_4").addEventListener('change', function() { if (confirm(`update iset_4: ${this.value}`)) socket.emit('iset', 4, this.value); this.value = ''})
        function getEnabler(i) { return function update() { socket.emit('select', i, 1) } }
        function getDisabler(i) { return function update() { socket.emit('select', i, 0) } }
        for (i = 1; i <= 4; i++) {
@@ -30,19 +35,17 @@
         document.getElementById(qty + "_" + ch).innerHTML = data;
       // $('#vset_2').innerHTML = data
     })
-	<!--  $('#messages').append($('<li>').text(msg)); -->
   </script>
 </head>
 <body>
   <h1>PSU control</h1>
   <hr>
-  System: <span id="sysinfo_global"></span>
-  <br>
-  Output:
+  <h2>Device ID: <span id="sysinfo_global"></span></h2>
+  <b>Output:</b>
   <input type="checkbox" id="en_output" disabled>
   <input type='button' id='output_on' value="ON">
-  <input type='button' id='output_off' value="OFF">
-  <table>
+  <input type='button' id='output_off' onclick='io().emit("output_off")' value="OFF">
+  <table class="center">
     <tr>
       <th>Channel</th>
       <th>Select</th>
@@ -60,9 +63,9 @@
         <input type='button' id='disable_1' value="Disable">
       </td>
       <td id="state_1">n/a</td>
-      <td id="vset_1">n/a</td>
+      <td> <span id="vset_1">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_vset_1" placeholder='Set value'> </td>
       <td id="vmeas_1">n/a</td>
-      <td id="iset_1">n/a</td>
+      <td> <span id="iset_1">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_iset_1" placeholder='Set value'> </td>
       <td id="imeas_1">n/a</td>
     </tr>
     <tr>
@@ -73,9 +76,9 @@
         <input type='button' id='disable_2' value="Disable">
       </td>
       <td id="state_2">n/a</td>
-      <td id="vset_2">n/a</td>
+      <td> <span id="vset_2">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_vset_2" placeholder='Set value'> </td>
       <td id="vmeas_2">n/a</td>
-      <td id="iset_2">n/a</td>
+      <td> <span id="iset_2">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_iset_2" placeholder='Set value'> </td>
       <td id="imeas_2">n/a</td>
     </tr>
     <tr>
@@ -86,9 +89,9 @@
         <input type='button' id='disable_3' value="Disable">
       </td>
       <td id="state_3">n/a</td>
-      <td id="vset_3">n/a</td>
+      <td> <span id="vset_3">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_vset_3" placeholder='Set value'> </td>
       <td id="vmeas_3">n/a</td>
-      <td id="iset_3">n/a</td>
+      <td> <span id="iset_3">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_iset_3" placeholder='Set value'> </td>
       <td id="imeas_3">n/a</td>
     </tr>
     <tr>
@@ -99,12 +102,13 @@
         <input type='button' id='disable_4' value="Disable">
       </td>
       <td id="state_4">n/a</td>
-      <td id="vset_4">n/a</td>
+      <td> <span id="vset_4">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_vset_4" placeholder='Set value'> </td>
       <td id="vmeas_4">n/a</td>
-      <td id="iset_4">n/a</td>
+      <td> <span id="iset_4">n/a</span> <input type=text label='test' size=8 pattern="[0-9]{1,2}\.[0-9]{0,3}" id="ctrl_iset_4" placeholder='Set value'> </td>
       <td id="imeas_4">n/a</td>
     </tr>
   </table>
+  <br>
   Last updated: <span id="update_last"></span>
   <hr>
 </body>
